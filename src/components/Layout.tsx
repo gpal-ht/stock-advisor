@@ -1,5 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useState, KeyboardEvent } from 'react'
+import { FaHome } from 'react-icons/fa'
 
 function Layout() {
   const [ticker, setTicker] = useState('')
@@ -22,7 +23,7 @@ function Layout() {
       <div className="sticky-header">
         <div className="search-container">
           <button onClick={handleHomeClick} className="home-button">
-            Home
+            <FaHome size={20} />
           </button>
           <input
             type="text"
