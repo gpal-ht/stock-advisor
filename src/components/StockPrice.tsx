@@ -112,11 +112,29 @@ function StockPrice() {
         `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${ticker}&apikey=AA26ZP2Y539USYXX`
       )
       
+      // Log the response for debugging
+      console.log('Alpha Vantage API Response:', response.data)
+
+      // Check for API error messages
+      if (response.data['Error Message']) {
+        throw new Error(response.data['Error Message'])
+      }
+
+      // Check for API rate limit
+      if (response.data.Note && response.data.Note.includes('API call frequency')) {
+        throw new Error('API rate limit reached. Please try again in a minute.')
+      }
+
+      // Check for API information messages
+      if (response.data['Information']) {
+        throw new Error('API key invalid or expired. Please check your API key.')
+      }
+
       const dataKey = getDataKey(timeRange)
       const timeSeries = response.data[dataKey]
       
-      if (!timeSeries) {
-        throw new Error('No data available for this ticker')
+      if (!timeSeries || Object.keys(timeSeries).length === 0) {
+        throw new Error(`No data available for ${ticker.toUpperCase()}. Please verify the ticker symbol.`)
       }
 
       const dates: string[] = []
@@ -131,9 +149,10 @@ function StockPrice() {
         })
 
       setStockData({ dates, prices })
-    } catch (err) {
-      setError('Error fetching stock data. Please try again.')
-      console.error(err)
+    } catch (err: any) {
+      const errorMessage = err.message || 'Error fetching stock data. Please try again.'
+      setError(errorMessage)
+      console.error('Stock API Error:', err)
       setStockData({ dates: [], prices: [] })
     } finally {
       setLoading(false)
@@ -230,7 +249,11 @@ function StockPrice() {
 
   return (
     <div className="container">
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="error" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
+          {error}
+        </p>
+      )}
       
       {ticker ? (
         <div className="chart-container">
@@ -246,7 +269,11 @@ function StockPrice() {
               </button>
             ))}
           </div>
-          <Line data={chartData} options={chartOptions} height={400} />
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '20px' }}>Loading...</div>
+          ) : (
+            <Line data={chartData} options={chartOptions} height={400} />
+          )}
         </div>
       ) : (
         <div className="chart-container">
