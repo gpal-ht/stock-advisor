@@ -12,10 +12,18 @@ function Layout() {
     }
   }
 
+  const handleHomeClick = () => {
+    setTicker('')
+    navigate('/dashboard')
+  }
+
   return (
     <>
       <div className="sticky-header">
         <div className="search-container">
+          <button onClick={handleHomeClick} className="home-button">
+            Home
+          </button>
           <input
             type="text"
             value={ticker}
