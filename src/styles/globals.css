@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 36, 36, 36;
+  --background-end-rgb: 36, 36, 36;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --foreground-rgb: 33, 53, 71;
+    --background-start-rgb: 255, 255, 255;
+    --background-end-rgb: 255, 255, 255;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+}
+
+#root {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-top: 80px;
+}
+
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  padding: 1rem;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.home-button {
+  position: absolute;
+  left: 0;
+  padding: 0.6em;
+  border-radius: 8px;
+  border: 1px solid #333;
+  font-size: 1em;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-button:hover {
+  background-color: #333;
+  color: white;
+}
+
+.ticker-input {
+  width: 300px;
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+  border: 1px solid #333;
+  font-size: 1em;
+  background-color: transparent;
+  color: inherit;
+}
+
+.chart-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: 500px;
+  position: relative;
+  color: #213547;
+}
+
+.time-range-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.time-range-button {
+  padding: 0.4em 0.8em;
+  font-size: 0.9em;
+  border-radius: 4px;
+  background: transparent;
+  color: #213547;
+  border: 1px solid #646cff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.time-range-button:hover:not(:disabled) {
+  background: #646cff;
+  color: white;
+}
+
+.time-range-button.active {
+  background: #646cff;
+  color: white;
+}
+
+.time-range-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff4444;
+  margin: 1rem 0;
+}
+
+@media (prefers-color-scheme: light) {
+  .sticky-header {
+    background: #f9f9f9;
+    border-bottom: 1px solid #eaeaea;
+  }
+  .chart-container {
+    background-color: #ffffff;
+  }
+  .home-button {
+    border-color: #666;
+  }
+  .home-button:hover {
+    background-color: #666;
+  }
+  .ticker-input {
+    border-color: #666;
+  }
+}
