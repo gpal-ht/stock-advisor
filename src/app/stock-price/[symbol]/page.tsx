@@ -220,7 +220,7 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
   return (
     <div className="container">
       {error && (
-        <p className="error" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
+        <p className="error\" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
           {error}
         </p>
       )}
