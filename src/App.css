@@ -36,7 +36,7 @@
   left: 0;
   padding: 0.6em;
   border-radius: 8px;
-  border: 1px solid #646cff;
+  border: 1px solid #333;
   font-size: 1em;
   background-color: transparent;
   color: inherit;
@@ -48,7 +48,7 @@
 }
 
 .home-button:hover {
-  background-color: #646cff;
+  background-color: #333;
   color: white;
 }
 
@@ -56,7 +56,7 @@
   width: 300px;
   padding: 0.6em 1.2em;
   border-radius: 8px;
-  border: 1px solid #646cff;
+  border: 1px solid #333;
   font-size: 1em;
   background-color: transparent;
   color: inherit;
@@ -132,5 +132,14 @@
   }
   .chart-container {
     background-color: #ffffff;
+  }
+  .home-button {
+    border-color: #666;
+  }
+  .home-button:hover {
+    background-color: #666;
+  }
+  .ticker-input {
+    border-color: #666;
   }
 }
