@@ -36,6 +36,16 @@ export default function StockPrice() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const timeRangeButtons = [
+    { value: '5y' as TimeRange, label: '5Y' },
+    { value: '1y' as TimeRange, label: '1Y' },
+    { value: '6m' as TimeRange, label: '6M' },
+    { value: '3m' as TimeRange, label: '3M' },
+    { value: '1m' as TimeRange, label: '1M' },
+    { value: '1w' as TimeRange, label: '1W' },
+    { value: '1d' as TimeRange, label: '1D' }
+  ]
+
   // Rest of the StockPrice component code remains the same, just remove the conditional rendering for ticker
   // as it's now part of the URL parameters
 
@@ -44,7 +54,7 @@ export default function StockPrice() {
       <Header />
       <div className="container">
         {error && (
-          <p className="error\" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
+          <p className="error" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
             {error}
           </p>
         )}
