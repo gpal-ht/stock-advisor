@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, KeyboardEvent } from 'react'
 import axios from 'axios'
 import {
   Chart as ChartJS,
@@ -137,6 +137,22 @@ function StockPrice() {
     }
   }
 
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && ticker && !loading) {
+      fetchStockData()
+    }
+  }
+
+  const timeRangeButtons: { value: TimeRange; label: string }[] = [
+    { value: '1d', label: '1D' },
+    { value: '1w', label: '1W' },
+    { value: '1m', label: '1M' },
+    { value: '3m', label: '3M' },
+    { value: '6m', label: '6M' },
+    { value: '1y', label: '1Y' },
+    { value: '5y', label: '5Y' }
+  ]
+
   const chartData = {
     labels: stockData.dates,
     datasets: [
@@ -166,7 +182,7 @@ function StockPrice() {
       },
       title: {
         display: true,
-        text: `${ticker.toUpperCase()} Stock Price History (${timeRange})`,
+        text: ticker ? `${ticker.toUpperCase()} Stock Price History` : 'Enter a stock symbol to view price history',
         font: {
           size: 16,
           weight: 'bold'
@@ -209,50 +225,46 @@ function StockPrice() {
     }
   }
 
-  const timeRangeOptions: { value: TimeRange; label: string }[] = [
-    { value: '5y', label: '5 Years' },
-    { value: '1y', label: '1 Year' },
-    { value: '6m', label: '6 Months' },
-    { value: '3m', label: '3 Months' },
-    { value: '1m', label: '1 Month' },
-    { value: '1w', label: '1 Week' },
-    { value: '1d', label: '1 Day' }
-  ]
-
   return (
     <div className="container">
-      <h1>Stock Price History</h1>
       <div className="search-container">
         <input
           type="text"
           value={ticker}
           onChange={(e) => setTicker(e.target.value.toUpperCase())}
-          placeholder="Enter stock ticker (e.g., IBM)"
+          onKeyPress={handleKeyPress}
+          placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
           className="ticker-input"
+          disabled={loading}
         />
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-          className="time-range-select"
-        >
-          {timeRangeOptions.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <button onClick={fetchStockData} disabled={loading || !ticker}>
-          {loading ? 'Loading...' : 'Get Data'}
-        </button>
       </div>
       
       {error && <p className="error">{error}</p>}
       
-      {stockData.dates.length > 0 && (
-        <div className="chart-container">
-          <Line data={chartData} options={chartOptions} height={400} />
+      <div className="chart-container">
+        <div className="time-range-buttons">
+          {timeRangeButtons.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => {
+                setTimeRange(value)
+                if (ticker) fetchStockData()
+              }}
+              className={`time-range-button ${timeRange === value ? 'active' : ''}`}
+              disabled={loading}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-      )}
+        {stockData.dates.length > 0 ? (
+          <Line data={chartData} options={chartOptions} height={400} />
+        ) : (
+          <div className="empty-chart">
+            <p>Enter a stock symbol above to view price history</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -14,13 +14,11 @@
 .search-container {
   margin: 2rem 0;
   display: flex;
-  gap: 1rem;
   justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 .ticker-input {
+  width: 300px;
   padding: 0.6em 1.2em;
   border-radius: 8px;
   border: 1px solid #646cff;
@@ -29,18 +27,9 @@
   color: inherit;
 }
 
-.time-range-select {
-  padding: 0.6em 2.4em 0.6em 1.2em;
-  border-radius: 8px;
-  border: 1px solid #646cff;
-  font-size: 1em;
-  background-color: transparent;
-  color: inherit;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%23646cff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1em center;
+.ticker-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .chart-container {
@@ -49,7 +38,41 @@
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  height: 450px;
+  height: 500px;
+  position: relative;
+}
+
+.time-range-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.time-range-button {
+  padding: 0.4em 0.8em;
+  font-size: 0.9em;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  border: 1px solid #646cff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.time-range-button:hover:not(:disabled) {
+  background: #646cff;
+  color: white;
+}
+
+.time-range-button.active {
+  background: #646cff;
+  color: white;
+}
+
+.time-range-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .error {
@@ -57,11 +80,17 @@
   margin: 1rem 0;
 }
 
+.empty-chart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 1.1em;
+}
+
 @media (prefers-color-scheme: light) {
   .chart-container {
     background-color: #ffffff;
-  }
-  .time-range-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%23213547' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 }
