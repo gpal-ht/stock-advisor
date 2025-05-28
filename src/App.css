@@ -1,7 +1,5 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -9,10 +7,23 @@
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
+  padding-top: 80px; /* Space for sticky header */
+}
+
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  padding: 1rem;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .search-container {
-  margin: 2rem 0;
+  max-width: 1000px;
+  margin: 0 auto;
   display: flex;
   justify-content: center;
 }
@@ -91,6 +102,10 @@
 }
 
 @media (prefers-color-scheme: light) {
+  .sticky-header {
+    background: #f9f9f9;
+    border-bottom: 1px solid #eaeaea;
+  }
   .chart-container {
     background-color: #ffffff;
   }

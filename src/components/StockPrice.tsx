@@ -227,43 +227,45 @@ function StockPrice() {
   }
 
   return (
-    <div className="container">
-      <h1>Stock Price History</h1>
-      <div className="search-container">
-        <input
-          type="text"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value.toUpperCase())}
-          onKeyPress={handleKeyPress}
-          placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
-          className="ticker-input"
-          disabled={loading}
-        />
+    <>
+      <div className="sticky-header">
+        <div className="search-container">
+          <input
+            type="text"
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
+            className="ticker-input"
+            disabled={loading}
+          />
+        </div>
+        {error && <p className="error">{error}</p>}
       </div>
       
-      {error && <p className="error">{error}</p>}
-      
-      {stockData.dates.length > 0 && (
-        <div className="chart-container">
-          <div className="time-range-buttons">
-            {timeRangeButtons.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => {
-                  setTimeRange(value)
-                  if (ticker) fetchStockData()
-                }}
-                className={`time-range-button ${timeRange === value ? 'active' : ''}`}
-                disabled={loading}
-              >
-                {label}
-              </button>
-            ))}
+      <div className="container">
+        {stockData.dates.length > 0 && (
+          <div className="chart-container">
+            <div className="time-range-buttons">
+              {timeRangeButtons.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => {
+                    setTimeRange(value)
+                    if (ticker) fetchStockData()
+                  }}
+                  className={`time-range-button ${timeRange === value ? 'active' : ''}`}
+                  disabled={loading}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <Line data={chartData} options={chartOptions} height={400} />
           </div>
-          <Line data={chartData} options={chartOptions} height={400} />
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }
 
