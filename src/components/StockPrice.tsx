@@ -1,4 +1,5 @@
-import { useState, KeyboardEvent } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   Chart as ChartJS,
@@ -25,11 +26,12 @@ ChartJS.register(
 type TimeRange = '5y' | '1y' | '6m' | '3m' | '1m' | '1w' | '1d'
 
 function StockPrice() {
-  const [ticker, setTicker] = useState('')
+  const [searchParams] = useSearchParams()
   const [timeRange, setTimeRange] = useState<TimeRange>('1y')
   const [stockData, setStockData] = useState<{ dates: string[], prices: number[] }>({ dates: [], prices: [] })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const ticker = searchParams.get('symbol') || ''
 
   const getApiFunction = (range: TimeRange) => {
     switch (range) {
@@ -138,11 +140,11 @@ function StockPrice() {
     }
   }
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && ticker && !loading) {
+  useEffect(() => {
+    if (ticker) {
       fetchStockData()
     }
-  }
+  }, [ticker, timeRange])
 
   const timeRangeButtons: { value: TimeRange; label: string }[] = [
     { value: '1d', label: '1D' },
@@ -227,43 +229,33 @@ function StockPrice() {
   }
 
   return (
-    <>
-      <div className="search-container">
-        <input
-          type="text"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value.toUpperCase())}
-          onKeyPress={handleKeyPress}
-          placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
-          className="ticker-input"
-          disabled={loading}
-        />
-      </div>
+    <div className="container">
       {error && <p className="error">{error}</p>}
       
-      <div className="container">
-        {stockData.dates.length > 0 && (
-          <div className="chart-container">
-            <div className="time-range-buttons">
-              {timeRangeButtons.map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => {
-                    setTimeRange(value)
-                    if (ticker) fetchStockData()
-                  }}
-                  className={`time-range-button ${timeRange === value ? 'active' : ''}`}
-                  disabled={loading}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <Line data={chartData} options={chartOptions} height={400} />
+      {ticker ? (
+        <div className="chart-container">
+          <div className="time-range-buttons">
+            {timeRangeButtons.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setTimeRange(value)}
+                className={`time-range-button ${timeRange === value ? 'active' : ''}`}
+                disabled={loading}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
-    </>
+          <Line data={chartData} options={chartOptions} height={400} />
+        </div>
+      ) : (
+        <div className="chart-container">
+          <div className="empty-chart">
+            Enter a stock symbol above to view price history
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -1,9 +1,31 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { useState, KeyboardEvent } from 'react'
 
 function Layout() {
+  const [ticker, setTicker] = useState('')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && ticker && !loading) {
+      navigate(`/stock-price?symbol=${ticker}`)
+    }
+  }
+
   return (
     <>
       <div className="sticky-header">
+        <div className="search-container">
+          <input
+            type="text"
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
+            className="ticker-input"
+            disabled={loading}
+          />
+        </div>
         <nav className="nav-links">
           <NavLink to="/stock-price" className="nav-link">Stock Price</NavLink>
           <NavLink to="/dashboard" className="nav-link">Dashboard</NavLink>
