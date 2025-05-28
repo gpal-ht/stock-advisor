@@ -10,7 +10,7 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/stock-price" element={<StockPrice />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard\" replace />} />
       </Route>
     </Routes>
   )
