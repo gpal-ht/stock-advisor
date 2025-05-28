@@ -132,6 +132,7 @@ function StockPrice() {
     } catch (err) {
       setError('Error fetching stock data. Please try again.')
       console.error(err)
+      setStockData({ dates: [], prices: [] })
     } finally {
       setLoading(false)
     }
@@ -182,7 +183,7 @@ function StockPrice() {
       },
       title: {
         display: true,
-        text: ticker ? `${ticker.toUpperCase()} Stock Price History` : 'Enter a stock symbol to view price history',
+        text: `${ticker.toUpperCase()} Stock Price History`,
         font: {
           size: 16,
           weight: 'bold'
@@ -227,6 +228,7 @@ function StockPrice() {
 
   return (
     <div className="container">
+      <h1>Stock Price History</h1>
       <div className="search-container">
         <input
           type="text"
@@ -241,30 +243,26 @@ function StockPrice() {
       
       {error && <p className="error">{error}</p>}
       
-      <div className="chart-container">
-        <div className="time-range-buttons">
-          {timeRangeButtons.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => {
-                setTimeRange(value)
-                if (ticker) fetchStockData()
-              }}
-              className={`time-range-button ${timeRange === value ? 'active' : ''}`}
-              disabled={loading}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        {stockData.dates.length > 0 ? (
-          <Line data={chartData} options={chartOptions} height={400} />
-        ) : (
-          <div className="empty-chart">
-            <p>Enter a stock symbol above to view price history</p>
+      {stockData.dates.length > 0 && (
+        <div className="chart-container">
+          <div className="time-range-buttons">
+            {timeRangeButtons.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => {
+                  setTimeRange(value)
+                  if (ticker) fetchStockData()
+                }}
+                className={`time-range-button ${timeRange === value ? 'active' : ''}`}
+                disabled={loading}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+          <Line data={chartData} options={chartOptions} height={400} />
+        </div>
+      )}
     </div>
   )
 }
