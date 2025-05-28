@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { useState, KeyboardEvent } from 'react'
 
 function Layout() {
@@ -26,10 +26,6 @@ function Layout() {
             disabled={loading}
           />
         </div>
-        <nav className="nav-links">
-          <NavLink to="/stock-price" className="nav-link">Stock Price</NavLink>
-          <NavLink to="/dashboard" className="nav-link">Dashboard</NavLink>
-        </nav>
       </div>
       <Outlet />
     </>
