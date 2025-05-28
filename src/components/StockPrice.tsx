@@ -228,20 +228,18 @@ function StockPrice() {
 
   return (
     <>
-      <div className="sticky-header">
-        <div className="search-container">
-          <input
-            type="text"
-            value={ticker}
-            onChange={(e) => setTicker(e.target.value.toUpperCase())}
-            onKeyPress={handleKeyPress}
-            placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
-            className="ticker-input"
-            disabled={loading}
-          />
-        </div>
-        {error && <p className="error">{error}</p>}
+      <div className="search-container">
+        <input
+          type="text"
+          value={ticker}
+          onChange={(e) => setTicker(e.target.value.toUpperCase())}
+          onKeyPress={handleKeyPress}
+          placeholder="Enter stock symbol and press Enter (e.g., AAPL)"
+          className="ticker-input"
+          disabled={loading}
+        />
       </div>
+      {error && <p className="error">{error}</p>}
       
       <div className="container">
         {stockData.dates.length > 0 && (
