@@ -12,6 +12,7 @@ import {
   Legend
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { getCachedData, setCachedData } from '@/lib/cache';
 
 ChartJS.register(
   CategoryScale,
@@ -91,6 +92,13 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
   const fetchStockData = async () => {
     if (!symbol) return;
     
+    // Check client-side cache first
+    const cachedData = getCachedData<any>(symbol, timeRange);
+    if (cachedData) {
+      processStockData(cachedData);
+      return;
+    }
+    
     setLoading(true);
     setError('');
     setStockData({ dates: [], prices: [] });
@@ -107,42 +115,48 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
         throw new Error('API rate limit reached. Please try again in a minute.');
       }
 
-      const dataKey = getDataKey(timeRange);
-      const timeSeries = data[dataKey];
-      
-      if (!timeSeries) {
-        throw new Error(`No data available for ${symbol}. The symbol might be invalid or the market might be closed.`);
-      }
-
-      const timeSeriesEntries = Object.entries(timeSeries);
-      if (timeSeriesEntries.length === 0) {
-        throw new Error(`No price data available for ${symbol} in the selected time range.`);
-      }
-
-      const dates: string[] = [];
-      const prices: number[] = [];
-
-      timeSeriesEntries
-        .slice(0, getDataLimit(timeRange))
-        .reverse()
-        .forEach(([date, values]: [string, any]) => {
-          if (values['4. close']) {
-            dates.push(formatDate(date, timeRange));
-            prices.push(parseFloat(values['4. close']));
-          }
-        });
-
-      if (dates.length === 0 || prices.length === 0) {
-        throw new Error(`No valid price data found for ${symbol}.`);
-      }
-
-      setStockData({ dates, prices });
+      // Cache the response
+      setCachedData(symbol, timeRange, data);
+      processStockData(data);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch stock data. Please try again.');
       console.error('Stock API Error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const processStockData = (data: any) => {
+    const dataKey = getDataKey(timeRange);
+    const timeSeries = data[dataKey];
+    
+    if (!timeSeries) {
+      throw new Error(`No data available for ${symbol}. The symbol might be invalid or the market might be closed.`);
+    }
+
+    const timeSeriesEntries = Object.entries(timeSeries);
+    if (timeSeriesEntries.length === 0) {
+      throw new Error(`No price data available for ${symbol} in the selected time range.`);
+    }
+
+    const dates: string[] = [];
+    const prices: number[] = [];
+
+    timeSeriesEntries
+      .slice(0, getDataLimit(timeRange))
+      .reverse()
+      .forEach(([date, values]: [string, any]) => {
+        if (values['4. close']) {
+          dates.push(formatDate(date, timeRange));
+          prices.push(parseFloat(values['4. close']));
+        }
+      });
+
+    if (dates.length === 0 || prices.length === 0) {
+      throw new Error(`No valid price data found for ${symbol}.`);
+    }
+
+    setStockData({ dates, prices });
   };
 
   useEffect(() => {

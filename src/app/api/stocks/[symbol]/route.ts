@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
+
+const CACHE_DURATION = 300; // 5 minutes in seconds
 
 export async function GET(
   request: Request,
@@ -8,8 +16,16 @@ export async function GET(
   const { symbol } = params;
   const searchParams = new URL(request.url).searchParams;
   const timeRange = searchParams.get('timeRange') || '1y';
-
+  
   try {
+    // Try to get cached data first
+    const cacheKey = `stock_${symbol}_${timeRange}`;
+    const cachedData = await redis.get(cacheKey);
+    
+    if (cachedData) {
+      return NextResponse.json(cachedData);
+    }
+
     const apiFunction = getApiFunction(timeRange);
     const response = await axios.get(
       `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`
@@ -29,6 +45,9 @@ export async function GET(
       );
     }
 
+    // Cache the successful response
+    await redis.setex(cacheKey, CACHE_DURATION, response.data);
+    
     return NextResponse.json(response.data);
   } catch (error) {
     return NextResponse.json(
