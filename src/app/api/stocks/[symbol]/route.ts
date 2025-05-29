@@ -7,7 +7,7 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
 
-const CACHE_DURATION = 300; // 5 minutes in seconds
+const CACHE_DURATION = 2 * 24 * 60 * 60; // 2 days in seconds
 
 export async function GET(
   request: Request,
