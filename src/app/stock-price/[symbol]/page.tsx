@@ -90,11 +90,13 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
   };
 
   const fetchStockData = async () => {
+    debugger; // Debug entry point
     if (!symbol) return;
     
     // Check client-side cache first
     const cachedData = getCachedData<any>(symbol, timeRange);
     if (cachedData) {
+      debugger; // Debug cache hit
       processStockData(cachedData);
       return;
     }
@@ -104,8 +106,14 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
     setStockData({ dates: [], prices: [] });
     
     try {
+      debugger; // Debug before API call
+      console.log('Fetching from:', `/api/stocks/${symbol}?timeRange=${timeRange}`);
+      
       const response = await fetch(`/api/stocks/${symbol}?timeRange=${timeRange}`);
       const data = await response.json();
+
+      debugger; // Debug after API response
+      console.log('API Response:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch stock data');
@@ -119,6 +127,8 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
       setCachedData(symbol, timeRange, data);
       processStockData(data);
     } catch (err: any) {
+      debugger; // Debug error
+      console.error('Full error:', err);
       setError(err.message || 'Failed to fetch stock data. Please try again.');
       console.error('Stock API Error:', err);
     } finally {
@@ -127,6 +137,7 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
   };
 
   const processStockData = (data: any) => {
+    debugger; // Debug data processing
     const dataKey = getDataKey(timeRange);
     const timeSeries = data[dataKey];
     
@@ -240,7 +251,7 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
   return (
     <div className="container">
       {error && (
-        <p className="error" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
+        <p className="error\" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
           {error}
         </p>
       )}
