@@ -13,53 +13,66 @@ export async function GET(
   request: Request,
   { params }: { params: { symbol: string } }
 ) {
-  debugger; // Debug entry point
   const { symbol } = params;
   const searchParams = new URL(request.url).searchParams;
   const timeRange = searchParams.get('timeRange') || '1y';
   
   try {
-    debugger; // Debug before cache check
     // Try to get cached data first
     const cacheKey = `stock_${symbol}_${timeRange}`;
     const cachedData = await redis.get(cacheKey);
     
     if (cachedData) {
-      debugger; // Debug cache hit
       return NextResponse.json(cachedData);
     }
 
-    debugger; // Debug before API call
     const apiFunction = getApiFunction(timeRange);
     
-    // Log environment variables (excluding sensitive values)
-    console.log('Environment check:', {
-      hasApiKey: !!process.env.ALPHA_VANTAGE_API_KEY,
-      hasRedisUrl: !!process.env.UPSTASH_REDIS_REST_URL,
-      hasRedisToken: !!process.env.UPSTASH_REDIS_REST_TOKEN
-    });
-    
-    console.log('API URL:', `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=[HIDDEN]`);
-    
     if (!process.env.ALPHA_VANTAGE_API_KEY) {
-      throw new Error('API key is not configured');
+      return NextResponse.json(
+        { error: 'Alpha Vantage API key is not configured' },
+        { status: 500 }
+      );
     }
-    
-    const response = await axios.get(
-      `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`
-    );
 
-    debugger; // Debug after API response
-    console.log('API Response status:', response.status);
-    console.log('API Response headers:', response.headers);
-    console.log('API Response data structure:', Object.keys(response.data));
+    const apiUrl = `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`;
+    
+    const response = await axios.get(apiUrl, {
+      validateStatus: (status) => true, // Allow any status code for better error handling
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    // Log response details for debugging
+    console.log('Alpha Vantage API Response:', {
+      status: response.status,
+      contentType: response.headers['content-type'],
+      isHtml: response.headers['content-type']?.includes('text/html'),
+      hasErrorMessage: !!response.data['Error Message'],
+      hasNote: !!response.data.Note
+    });
+
+    // Check for HTML response (invalid API key symptom)
+    if (response.headers['content-type']?.includes('text/html')) {
+      return NextResponse.json(
+        { error: 'Invalid or expired Alpha Vantage API key. Please check your API key configuration.' },
+        { status: 401 }
+      );
+    }
 
     if (!response.data) {
-      throw new Error('Empty response from API');
+      return NextResponse.json(
+        { error: 'Empty response from Alpha Vantage API' },
+        { status: 502 }
+      );
     }
 
     if (response.data['Error Message']) {
-      throw new Error(response.data['Error Message']);
+      return NextResponse.json(
+        { error: response.data['Error Message'] },
+        { status: 400 }
+      );
     }
 
     if (response.data.Note?.includes('API call frequency')) {
@@ -72,24 +85,26 @@ export async function GET(
     // Validate the response structure
     const dataKey = getDataKey(timeRange);
     if (!response.data[dataKey]) {
-      throw new Error(`Invalid response structure: missing ${dataKey}`);
+      return NextResponse.json(
+        { error: `No data available for ${symbol}. The symbol might be invalid or the market might be closed.` },
+        { status: 404 }
+      );
     }
 
     // Cache the successful response
     await redis.setex(cacheKey, CACHE_DURATION, response.data);
-    debugger; // Debug successful response
     
     return NextResponse.json(response.data);
   } catch (error: any) {
-    debugger; // Debug catch block
-    console.error('Full error:', {
+    console.error('Stock API Error:', {
       message: error.message,
-      stack: error.stack,
-      response: error.response?.data
+      status: error.response?.status,
+      contentType: error.response?.headers?.['content-type'],
+      data: error.response?.data
     });
     
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch stock data' },
+      { error: 'Failed to fetch stock data. Please check your API key and try again.' },
       { status: error.response?.status || 500 }
     );
   }
