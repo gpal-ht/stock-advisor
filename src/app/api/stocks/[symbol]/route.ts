@@ -31,29 +31,48 @@ export async function GET(
 
     debugger; // Debug before API call
     const apiFunction = getApiFunction(timeRange);
-    console.log('API URL:', `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`);
+    
+    // Log environment variables (excluding sensitive values)
+    console.log('Environment check:', {
+      hasApiKey: !!process.env.ALPHA_VANTAGE_API_KEY,
+      hasRedisUrl: !!process.env.UPSTASH_REDIS_REST_URL,
+      hasRedisToken: !!process.env.UPSTASH_REDIS_REST_TOKEN
+    });
+    
+    console.log('API URL:', `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=[HIDDEN]`);
+    
+    if (!process.env.ALPHA_VANTAGE_API_KEY) {
+      throw new Error('API key is not configured');
+    }
     
     const response = await axios.get(
       `https://www.alphavantage.co/query?function=${apiFunction}&symbol=${symbol}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`
     );
 
     debugger; // Debug after API response
-    console.log('API Response:', response.data);
+    console.log('API Response status:', response.status);
+    console.log('API Response headers:', response.headers);
+    console.log('API Response data structure:', Object.keys(response.data));
 
-    if (!response.data || response.data['Error Message']) {
-      debugger; // Debug error response
-      return NextResponse.json(
-        { error: 'Invalid stock symbol or API error' },
-        { status: 400 }
-      );
+    if (!response.data) {
+      throw new Error('Empty response from API');
+    }
+
+    if (response.data['Error Message']) {
+      throw new Error(response.data['Error Message']);
     }
 
     if (response.data.Note?.includes('API call frequency')) {
-      debugger; // Debug rate limit
       return NextResponse.json(
-        { error: 'API rate limit reached' },
+        { error: 'API rate limit reached. Please try again in a minute.' },
         { status: 429 }
       );
+    }
+
+    // Validate the response structure
+    const dataKey = getDataKey(timeRange);
+    if (!response.data[dataKey]) {
+      throw new Error(`Invalid response structure: missing ${dataKey}`);
     }
 
     // Cache the successful response
@@ -63,10 +82,15 @@ export async function GET(
     return NextResponse.json(response.data);
   } catch (error: any) {
     debugger; // Debug catch block
-    console.error('Full error:', error);
+    console.error('Full error:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
+    
     return NextResponse.json(
       { error: error.message || 'Failed to fetch stock data' },
-      { status: 500 }
+      { status: error.response?.status || 500 }
     );
   }
 }
@@ -81,5 +105,18 @@ function getApiFunction(timeRange: string) {
       return 'TIME_SERIES_DAILY';
     default:
       return 'TIME_SERIES_MONTHLY';
+  }
+}
+
+function getDataKey(timeRange: string) {
+  switch (timeRange) {
+    case '1d':
+      return 'Time Series (5min)';
+    case '1w':
+    case '1m':
+    case '3m':
+      return 'Time Series (Daily)';
+    default:
+      return 'Monthly Time Series';
   }
 }
