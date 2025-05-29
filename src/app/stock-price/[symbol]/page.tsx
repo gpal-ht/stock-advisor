@@ -103,16 +103,20 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
         throw new Error(data.error || 'Failed to fetch stock data');
       }
 
+      if (data.Note?.includes('API call frequency')) {
+        throw new Error('API rate limit reached. Please try again in a minute.');
+      }
+
       const dataKey = getDataKey(timeRange);
       const timeSeries = data[dataKey];
       
       if (!timeSeries) {
-        throw new Error(`No data available for ${symbol}`);
+        throw new Error(`No data available for ${symbol}. The symbol might be invalid or the market might be closed.`);
       }
 
       const timeSeriesEntries = Object.entries(timeSeries);
       if (timeSeriesEntries.length === 0) {
-        throw new Error(`No price data available for ${symbol}`);
+        throw new Error(`No price data available for ${symbol} in the selected time range.`);
       }
 
       const dates: string[] = [];
@@ -129,12 +133,12 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
         });
 
       if (dates.length === 0 || prices.length === 0) {
-        throw new Error(`No valid price data found for ${symbol}`);
+        throw new Error(`No valid price data found for ${symbol}.`);
       }
 
       setStockData({ dates, prices });
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch stock data');
+      setError(err.message || 'Failed to fetch stock data. Please try again.');
       console.error('Stock API Error:', err);
     } finally {
       setLoading(false);
@@ -222,7 +226,7 @@ export default function StockPrice({ params }: { params: { symbol: string } }) {
   return (
     <div className="container">
       {error && (
-        <p className="error\" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
+        <p className="error" style={{ color: 'red', padding: '10px', textAlign: 'center' }}>
           {error}
         </p>
       )}
